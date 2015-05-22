@@ -31,35 +31,78 @@ namespace BehaviorLibrary.Components.Composites
         public override BehaviorReturnCode Behave()
         {
             
-            for (int i = 0; i < _Behaviors.Length; i++)
-            {
-                try
-                {
-                    switch (_Behaviors[i].Behave())
-                    {
-                        case BehaviorReturnCode.Failure:
-                            continue;
-                        case BehaviorReturnCode.Success:
-                            ReturnCode = BehaviorReturnCode.Success;
-                            return ReturnCode;
-                        case BehaviorReturnCode.Running:
-                            ReturnCode = BehaviorReturnCode.Running;
-                            return ReturnCode;
-                        default:
-                            continue;
-                    }
-                }
-                catch (Exception e)
-                {
-#if DEBUG
-                Console.Error.WriteLine(e.ToString());
-#endif
-                    continue;
-                }
-            }
+			//if it's running, then just run the running node
+			if (ReturnCode == BehaviorReturnCode.Running) {
 
-            ReturnCode = BehaviorReturnCode.Failure;
-            return ReturnCode;
+				//search the running node
+				for (int i = 0; i < _Behaviors.Length; i++)
+				{
+
+
+					if (_Behaviors[i].ReturnCode == BehaviorReturnCode.Running) {
+						try
+						{
+							switch (_Behaviors[i].Behave())
+							{
+							case BehaviorReturnCode.Failure:
+								continue;
+							case BehaviorReturnCode.Success:
+								ReturnCode = BehaviorReturnCode.Success;
+								return ReturnCode;
+							case BehaviorReturnCode.Running:
+								ReturnCode = BehaviorReturnCode.Running;
+								return ReturnCode;
+							default:
+								continue;
+							}
+						}
+						catch (Exception e)
+						{
+							#if DEBUG
+							Console.Error.WriteLine(e.ToString());
+							#endif
+							continue;
+						}
+					}
+
+
+				}
+
+			}else{
+
+				for (int i = 0; i < _Behaviors.Length; i++)
+				{
+					try
+					{
+						switch (_Behaviors[i].Behave())
+						{
+						case BehaviorReturnCode.Failure:
+							continue;
+						case BehaviorReturnCode.Success:
+							ReturnCode = BehaviorReturnCode.Success;
+							return ReturnCode;
+						case BehaviorReturnCode.Running:
+							ReturnCode = BehaviorReturnCode.Running;
+							return ReturnCode;
+						default:
+							continue;
+						}
+					}
+					catch (Exception e)
+					{
+						#if DEBUG
+						Console.Error.WriteLine(e.ToString());
+						#endif
+						continue;
+					}
+				}
+				
+
+			}
+
+			ReturnCode = BehaviorReturnCode.Failure;
+			return ReturnCode;
+			        
         }
     }
 }

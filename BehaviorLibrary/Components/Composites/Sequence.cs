@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace BehaviorLibrary.Components.Composites
 {
@@ -28,41 +29,102 @@ namespace BehaviorLibrary.Components.Composites
         /// <returns>the behaviors return code</returns>
         public override BehaviorReturnCode Behave()
         {
-			//add watch for any running behaviors
-			bool anyRunning = false;
 
-            for(int i = 0; i < _behaviors.Length;i++)
-            {
-                try
-                {
-                    switch (_behaviors[i].Behave())
-                    {
-                        case BehaviorReturnCode.Failure:
-                            ReturnCode = BehaviorReturnCode.Failure;
-                            return ReturnCode;
-                        case BehaviorReturnCode.Success:
-                            continue;
-                        case BehaviorReturnCode.Running:
-							anyRunning = true;
-                            continue;
-                        default:
-                            ReturnCode = BehaviorReturnCode.Success;
-                            return ReturnCode;
-                    }
-                }
-                catch (Exception e)
-                {
+			if (ReturnCode == BehaviorReturnCode.Running) {
+				//search the running node
+
+				//add watch for any running behaviors
+				bool anyRunning = false;
+				for (int i = 0; i < _behaviors.Length; i++)
+				{
+					if (_behaviors[i].ReturnCode == BehaviorReturnCode.Running) {
+						try
+						{
+							switch (_behaviors[i].Behave())
+							{
+							case BehaviorReturnCode.Failure:
+								ReturnCode = BehaviorReturnCode.Failure;
+								return ReturnCode;
+							case BehaviorReturnCode.Success:
+								continue;
+							case BehaviorReturnCode.Running:
+								anyRunning = true;
+								//TODO: GiriDebug
+								ReturnCode = BehaviorReturnCode.Running;
+								return ReturnCode;
+								
+								continue;
+							default:
+								ReturnCode = BehaviorReturnCode.Success;
+								return ReturnCode;
+							}
+						}
+						catch (Exception e)
+						{
 #if DEBUG
-                Console.Error.WriteLine(e.ToString());
+							Console.Error.WriteLine(e.ToString());
 #endif
-                    ReturnCode = BehaviorReturnCode.Failure;
-                    return ReturnCode;
-                }
-            }
+							ReturnCode = BehaviorReturnCode.Failure;
+							return ReturnCode;
+						}
+						
+						//if none running, return success, otherwise return running
+						ReturnCode = !anyRunning ? BehaviorReturnCode.Success : BehaviorReturnCode.Running;
+						return ReturnCode;
+					}
 
-			//if none running, return success, otherwise return running
-            ReturnCode = !anyRunning ? BehaviorReturnCode.Success : BehaviorReturnCode.Running;
-            return ReturnCode;
+				}
+				//if none running, return success, otherwise return running
+				ReturnCode = !anyRunning ? BehaviorReturnCode.Success : BehaviorReturnCode.Running;
+				return ReturnCode;
+
+			}else{
+
+
+				//add watch for any running behaviors
+				bool anyRunning = false;
+				
+				for(int i = 0; i < _behaviors.Length;i++)
+				{
+					
+					try
+					{
+						switch (_behaviors[i].Behave())
+						{
+						case BehaviorReturnCode.Failure:
+							ReturnCode = BehaviorReturnCode.Failure;
+							return ReturnCode;
+						case BehaviorReturnCode.Success:
+							continue;
+						case BehaviorReturnCode.Running:
+							anyRunning = true;
+							//TODO: GiriDebug
+							ReturnCode = BehaviorReturnCode.Running;
+							return ReturnCode;
+							
+							continue;
+						default:
+							ReturnCode = BehaviorReturnCode.Success;
+							return ReturnCode;
+						}
+					}
+					catch (Exception e)
+					{
+						#if DEBUG
+						Console.Error.WriteLine(e.ToString());
+						#endif
+						ReturnCode = BehaviorReturnCode.Failure;
+						return ReturnCode;
+					}
+				}
+				
+				//if none running, return success, otherwise return running
+				ReturnCode = !anyRunning ? BehaviorReturnCode.Success : BehaviorReturnCode.Running;
+				return ReturnCode;
+
+			}
+
+
         }
 
 

@@ -31,34 +31,78 @@ namespace BehaviorLibrary.Components.Composites
         /// <returns>the behaviors return code</returns>
         public override BehaviorReturnCode Behave()
         {
-            _Random = new Random(DateTime.Now.Millisecond);
+            
+			//if it's running, then just run the running node
+			if (ReturnCode == BehaviorReturnCode.Running) {
+				
+				//search the running node
+				for (int i = 0; i < _Behaviors.Length; i++)
+				{
+					
+					
+					if (_Behaviors[i].ReturnCode == BehaviorReturnCode.Running) {
+						try
+						{
+							switch (_Behaviors[i].Behave())
+							{
+							case BehaviorReturnCode.Failure:
+								continue;
+							case BehaviorReturnCode.Success:
+								ReturnCode = BehaviorReturnCode.Success;
+								return ReturnCode;
+							case BehaviorReturnCode.Running:
+								ReturnCode = BehaviorReturnCode.Running;
+								return ReturnCode;
+							default:
+								continue;
+							}
+						}
+						catch (Exception e)
+						{
+							#if DEBUG
+							Console.Error.WriteLine(e.ToString());
+							#endif
+							continue;
+						}
+					}
+					
+					
+				}
+				
+			}else{
+				_Random = new Random(DateTime.Now.Millisecond);
+				
+				try
+				{
+					switch (_Behaviors[_Random.Next(0, _Behaviors.Length)].Behave())
+					{
+					case BehaviorReturnCode.Failure:
+						ReturnCode = BehaviorReturnCode.Failure;
+						return ReturnCode;
+					case BehaviorReturnCode.Success:
+						ReturnCode = BehaviorReturnCode.Success;
+						return ReturnCode;
+					case BehaviorReturnCode.Running:
+						ReturnCode = BehaviorReturnCode.Running;
+						return ReturnCode;
+					default:
+						ReturnCode = BehaviorReturnCode.Failure;
+						return ReturnCode;
+					}
+				}
+				catch (Exception e)
+				{
+					#if DEBUG
+					Console.Error.WriteLine(e.ToString());
+					#endif
+					ReturnCode = BehaviorReturnCode.Failure;
+					return ReturnCode;
+				}
+			}
 
-            try
-            {
-                switch (_Behaviors[_Random.Next(0, _Behaviors.Length)].Behave())
-                {
-                    case BehaviorReturnCode.Failure:
-                        ReturnCode = BehaviorReturnCode.Failure;
-                        return ReturnCode;
-                    case BehaviorReturnCode.Success:
-                        ReturnCode = BehaviorReturnCode.Success;
-                        return ReturnCode;
-                    case BehaviorReturnCode.Running:
-                        ReturnCode = BehaviorReturnCode.Running;
-                        return ReturnCode;
-                    default:
-                        ReturnCode = BehaviorReturnCode.Failure;
-                        return ReturnCode;
-                }
-            }
-            catch (Exception e)
-            {
-#if DEBUG
-                Console.Error.WriteLine(e.ToString());
-#endif
-                ReturnCode = BehaviorReturnCode.Failure;
-                return ReturnCode;
-            }
+			ReturnCode = BehaviorReturnCode.Failure;
+			return ReturnCode;
+
         }
     }
 }
